@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.annotation.Transient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -68,6 +69,7 @@ class MatchIntegrationTest {
         // GET /matches
     }
 @Test
+@Transient
     void create_goals_ok() throws Exception {
 
         MockHttpServletResponse response = mockMvc.perform(post("/matches/3/goals")
@@ -294,16 +296,8 @@ class MatchIntegrationTest {
     private static TeamMatch teamMatchA3() {
         return TeamMatch.builder()
                 .team(team1())
-                .score(9)
+                .score(1)
                 .scorers(List.of(
-                        playerScorer(),
-                        playerScorer(),
-                        playerScorer(),
-                        playerScorer(),
-                        playerScorer(),
-                        playerScorer(),
-                        playerScorer(),
-                        playerScorer(),
                         playerScorer()))
                 .build();
     }

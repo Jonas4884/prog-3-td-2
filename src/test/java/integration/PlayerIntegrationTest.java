@@ -9,9 +9,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.annotation.Transient;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -22,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @SpringBootTest(classes = FootApi.class)
 @AutoConfigureMockMvc
+@Transactional
 class PlayerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
@@ -60,10 +63,11 @@ class PlayerIntegrationTest {
         List<Player> actual = convertFromHttpResponse(response);
 
         assertEquals(HttpStatus.OK.value(), response.getStatus());
-        assertEquals(25, actual.size());
+        assertEquals(31, actual.size());
     }
 
     @Test
+    @Transient
     void create_players_ok() throws Exception {
         Player toCreate = Player.builder()
                 .name("Joe Doe")
@@ -84,6 +88,7 @@ class PlayerIntegrationTest {
     }
 
     @Test
+    @Transient
     void update_players_ok() throws Exception {
         Player toUpdate = Player.builder()
                 .name("Joe Doe")

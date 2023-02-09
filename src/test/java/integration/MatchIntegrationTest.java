@@ -2,20 +2,25 @@ package integration;
 
 import app.foot.FootApi;
 import app.foot.controller.rest.*;
+import app.foot.exception.ApiException;
 import app.foot.exception.BadRequestException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import jakarta.servlet.ServletException;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.annotation.Transient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
@@ -29,6 +34,7 @@ import static utils.TestUtils.*;
 
 @SpringBootTest(classes = FootApi.class)
 @AutoConfigureMockMvc
+@Transactional
 class MatchIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
@@ -68,6 +74,7 @@ class MatchIntegrationTest {
         // GET /matches
     }
 @Test
+@Transient
     void create_goals_ok() throws Exception {
 
         MockHttpServletResponse response = mockMvc.perform(post("/matches/3/goals")
@@ -89,29 +96,21 @@ class MatchIntegrationTest {
 
     @Test
     void add_goals_to_match_ko() throws Exception {
-        PlayerScorer nullTimeScorer = scorer1().toBuilder()
+        int MATCH_ID = 3;
+        PlayerScorer toCreate = PlayerScorer.builder()
+                .player(player1())
                 .scoreTime(null)
+                .isOG(false)
                 .build();
-
-        RequestBuilder request = post("/matches/3/goals")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(List.of(nullTimeScorer)));
-
-        ServletException exception = assertThrows(ServletException.class, () -> mockMvc.perform(request));
-
-        String exceptionMessage = formatThrowMessage(
-                "Score minute is mandatory.",
-                HttpStatus.BAD_REQUEST
-        );
-
-        assertThrowsExceptionMessage(exceptionMessage, BadRequestException.class, () -> {
-            throw exception.getRootCause();
-        });
-    }
-
-
-
-
+            MockHttpServletResponse responses = mockMvc
+                    .perform(post("/matches/" + MATCH_ID + "/goals")
+                            .content(objectMapper.writeValueAsString(List.of(toCreate)))
+                            .contentType("application/json")
+                            .accept("application/json"))
+                    .andReturn()
+                    .getResponse();
+            assertEquals(responses.getContentAsString(),"400 BAD_REQUEST : Score minute is mandatory.");
+        }
 
     public static Match expectedMatch1() {
         return Match.builder()
@@ -294,8 +293,9 @@ class MatchIntegrationTest {
     private static TeamMatch teamMatchA3() {
         return TeamMatch.builder()
                 .team(team1())
-                .score(9)
+                .score(10)
                 .scorers(List.of(
+                        playerScorer(),
                         playerScorer(),
                         playerScorer(),
                         playerScorer(),

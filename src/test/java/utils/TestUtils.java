@@ -4,6 +4,7 @@ import app.foot.controller.rest.Match;
 import app.foot.controller.rest.Player;
 import app.foot.controller.rest.PlayerScorer;
 import app.foot.controller.rest.TeamMatch;
+import app.foot.exception.ApiException;
 import app.foot.model.Team;
 import app.foot.repository.TeamRepository;
 import app.foot.repository.entity.PlayerEntity;
@@ -142,6 +143,14 @@ public class TestUtils {
         Throwable exception = assertThrows(exceptionClass, executable);
         assertEquals(message, exception.getMessage());
     }
+
+    public static void assertThrowsApiException(String expectedBody, Executable executable) {
+        ApiException apiException = assertThrows(ApiException.class, executable);
+        assertEquals(expectedBody, apiException.getMessage());
+    }
+
+
+
 
     public static  PlayerEntity  playerEntityModel(app.foot.model.Player player){
         return  PlayerEntity.builder()
